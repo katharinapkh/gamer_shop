@@ -128,7 +128,6 @@ function actionPage() {
         search.value = '';
     });
 }
-
 //get data from server
 
 function getData() {
@@ -155,7 +154,6 @@ function getData() {
     //.catch(err => console.warn(err)); - упрощенный вариант записи
 }
 
-
 //rendering card
 function renderCards(data) {
     const goodsWrapper = document.querySelector('.goods');
@@ -179,9 +177,7 @@ function renderCards(data) {
 
         goodsWrapper.appendChild(card);
     });
-
 }
-
 //end of rendering func
 //end getting data
 
