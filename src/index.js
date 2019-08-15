@@ -102,34 +102,26 @@ function actionPage() {
         search = document.querySelector('.search-wrapper_input'), //получаем инпут поиска
         searchBtn = document.querySelector('.search-btn');
 
-    discountCheckbox.addEventListener('click', () => {
-        cards.forEach((card) => { //перебираем карточки для того чтобы отобрать все что с акциеей
-            if (discountCheckbox.checked) {
-                if (!card.querySelector('.card-sale')) {
-                    //card.parentNode.remove();
-                    card.parentNode.style.display = 'none'; //убираем ненужные карточки вместе с родителем
-                }
+    discountCheckbox.addEventListener('click', filter);
+    min.addEventListener('change', filter);
+    max.addEventListener('change', filter);
+
+    function filter() {
+        cards.forEach((card) => { //перебираем каждую карточку
+            const cardPrice = card.querySelector('.card-price'),
+                price = parseFloat(cardPrice.textContent),
+                discount = card.querySelector('.card-sale');
+            //проверяем введено ли какое-то значение и меньше ли оно от минимального значения, аналогично с макс.
+            if (min.value && price < min.value || (max.value && price > max.value)) {
+                card.parentNode.style.display = 'none';
+            } else if (discountCheckbox.checked && !discount) {
+                card.parentNode.style.display = 'none';
             } else {
-                //goods.appendChild(card.parentNode);
                 card.parentNode.style.display = ''; //возвращаем все карточки с товарами, убирая галоку с акций
             }
         });
-    });
-
-    function filterPrice() { 
-        cards.forEach((card) => { //перебираем каждую карточку
-            const cardPrice = card.querySelector('.card-price'),
-                price = parseFloat(cardPrice.textContent);
-                //проверяем введено ли какое-то значение и меньше ли оно от минимального значения, аналогично с макс.
-            if (min.value && price < min.value || (max.value && price > max.value)) {
-                card.parentNode.style.display = 'none'; //прячем несоответствующие карточки
-            } else {
-                card.parentNode.style.display = '';
-            }
-        });
     }
-    min.addEventListener('change', filterPrice);
-    max.addEventListener('change', filterPrice);
+    //end filter sale and search
 
     searchBtn.addEventListener('click', () => {
         const searchText = new RegExp(search.value.trim(), 'i');
@@ -139,7 +131,7 @@ function actionPage() {
             const title = card.querySelector('.card-title');
             //у заголовка карточки получаем текст и методом Тест проверяем нет ли в тексте наше регулярное выражение
             if (!searchText.test(title.textContent)) {
-                card.parentNode.style.display = 'none';
+                card.parentNode.style.display = 'none'; //прячем несоответствующие карточки
             } else {
                 card.parentNode.style.display = '';
                 //console.dir(cards[0]); -метод вывода в консоль всех свойств и методов элемента
@@ -148,10 +140,104 @@ function actionPage() {
         search.value = '';
     });
 }
-//end filter sale and search
+
+//get data from server
+
+function getData() {
+    const goodsWrapper = document.querySelector('.goods');
+
+    return fetch('../db/db.json') //метод получения данных
+        .then((response) => { //получаем доступ к базе данных на сервере или локально
+            //с помощью then обработали промис и проверили статусы
+            if (response.ok) { // если все ок, то выводим данные
+                return response.json(); //метод работающий с json форматом
+            } else {
+                throw new Error('Данные не были получены, ошибка: ', +response.status); //если не все ок, то выдаем ошибку
+            }
+        })
+        .then((data) => { //получение данных - обработка данных
+            return data;
+        })
+        .catch((err) => { //метод перехвата ошибок
+            console.warn(err); //вывод ошибки для разработчика
+            goodsWrapper.innerHTML = '<div style="font-size: 30px">Упс, что-то пошло не так...</div>'; //информация об ошибке для пользователя
+        });
+    //.catch(err => console.warn(err)); - упрощенный вариант записи
+}
 
 
-toggleCheckbox();
-toggleCart();
-addCart();
-actionPage();
+//rendering card
+function renderCards(data) {
+    const goodsWrapper = document.querySelector('.goods');
+    data.goods.forEach((good) => { //переберем все товары в массиве goods (взято из базы данных, свойства обьекта)
+        const card = document.createElement('div'); //создали элемент - див карточки в которой будет верстка для товара
+        card.className = 'col-12 col-md-6 col-lg-4 col-xl-3';
+        //далее проверяем есть ли у товара скидка (распродажа) и выводим соответствующий стикер на товаре
+        //и добавляем атрибут для того чтобі потом открівать по категориям
+        card.innerHTML = ` <div class="card" data-category="${good.category}">
+                        ${good.sale ? '<div class="card-sale">🔥Hot Sale🔥</div>' : ''} 
+                            <div class="card-img-wrapper">
+                            <span class="card-img-top"
+            style="background-image: url('${good.img}')"></span>
+                            </div>
+                            <div class="card-body justify-content-between">
+                            <div class="card-price" style="${good.sale ? 'color:red' : ''}">${good.price} UAH</div>
+                            <h5 class="card-title">${good.title}</h5>
+                            <button class="btn btn-primary">В корзину</button>
+                             </div>
+                         </div>`;
+
+        goodsWrapper.appendChild(card);
+    });
+
+}
+
+//end of rendering func
+//end getting data
+
+//Catalog
+function renderCatalog() {
+    const cards = document.querySelectorAll('.goods .card'),
+        catalogList = document.querySelector('.catalog-list'),
+        catalogBtn = document.querySelector('.catalog-button'),
+        catalogWrapper = document.querySelector('.catalog');
+    const categories = new Set(); //создаем Коллекцию методом Set
+
+    cards.forEach((card) => {
+        categories.add(card.dataset.category); //датасет - свойство взятое из ДОМ дерева через console.dir
+    });
+
+    categories.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        catalogList.appendChild(li);
+    });
+
+    catalogBtn.addEventListener('click', (event) => {
+        if (catalogWrapper.style.display) {
+            catalogWrapper.style.display = '';
+        } else {
+            catalogWrapper.style.display = 'block';
+        }
+
+        if (event.target.tagName === 'LI') {
+            cards.forEach((card) => {
+                if (card.dataset.category === event.target.textContent) {
+                    card.parentNode.style.display = '';
+                } else {
+                    card.parentNode.style.display = 'none';
+                }
+            });
+        }
+    });
+}
+//end catalog
+
+getData().then((data) => {
+    renderCards(data);
+    toggleCheckbox();
+    toggleCart();
+    addCart();
+    actionPage();
+    renderCatalog();
+});
