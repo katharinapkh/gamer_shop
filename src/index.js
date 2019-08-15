@@ -3,18 +3,6 @@
 //checkbox
 function toggleCheckbox() {
     const checkbox = document.querySelectorAll('.filter-check_checkbox');
-    //1st variant
-    // for (let i = 0; i < checkbox.length; i++) {
-    //     checkbox[i].addEventListener('change', function () {
-    //         if (this.checked) {
-    //             this.nextElementSibling.classList.add('checked');
-    //         } else {
-    //             this.nextElementSibling.classList.remove('checked');
-    //         }
-    //     });
-    // }
-
-    //2d variant
     checkbox.forEach((elem) => {
         elem.addEventListener('change', function () {
             if (this.checked) {
@@ -152,7 +140,8 @@ function getData() {
             if (response.ok) { // если все ок, то выводим данные
                 return response.json(); //метод работающий с json форматом
             } else {
-                throw new Error('Данные не были получены, ошибка: ', +response.status); //если не все ок, то выдаем ошибку
+                //если не все ок, то выдаем ошибку
+                throw new Error ('Данные не были получены, ошибка: ', +response.status); 
             }
         })
         .then((data) => { //получение данных - обработка данных
@@ -160,7 +149,8 @@ function getData() {
         })
         .catch((err) => { //метод перехвата ошибок
             console.warn(err); //вывод ошибки для разработчика
-            goodsWrapper.innerHTML = '<div style="font-size: 30px">Упс, что-то пошло не так...</div>'; //информация об ошибке для пользователя
+            //информация об ошибке для пользователя
+            goodsWrapper.innerHTML = '<div style="font-size: 30px">Упс, что-то пошло не так...</div>'; 
         });
     //.catch(err => console.warn(err)); - упрощенный вариант записи
 }
@@ -198,10 +188,10 @@ function renderCards(data) {
 //Catalog
 function renderCatalog() {
     const cards = document.querySelectorAll('.goods .card'),
-        catalogList = document.querySelector('.catalog-list'),
-        catalogBtn = document.querySelector('.catalog-button'),
-        catalogWrapper = document.querySelector('.catalog');
-    const categories = new Set(); //создаем Коллекцию методом Set
+          catalogList = document.querySelector('.catalog-list'),
+          catalogBtn = document.querySelector('.catalog-button'),
+          catalogWrapper = document.querySelector('.catalog'),
+          categories = new Set(); //создаем Коллекцию методом Set
 
     cards.forEach((card) => {
         categories.add(card.dataset.category); //датасет - свойство взятое из ДОМ дерева через console.dir
