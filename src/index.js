@@ -116,12 +116,13 @@ function actionPage() {
         });
     });
 
-    function filterPrice() {
-        cards.forEach((card) => {
+    function filterPrice() { 
+        cards.forEach((card) => { //перебираем каждую карточку
             const cardPrice = card.querySelector('.card-price'),
                 price = parseFloat(cardPrice.textContent);
+                //проверяем введено ли какое-то значение и меньше ли оно от минимального значения, аналогично с макс.
             if (min.value && price < min.value || (max.value && price > max.value)) {
-                card.parentNode.style.display = 'none';
+                card.parentNode.style.display = 'none'; //прячем несоответствующие карточки
             } else {
                 card.parentNode.style.display = '';
             }
