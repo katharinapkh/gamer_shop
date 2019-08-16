@@ -133,7 +133,7 @@ function actionPage() {
 function getData() {
     const goodsWrapper = document.querySelector('.goods');
 
-    return fetch('../db/db.json') //метод получения данных
+    return fetch('./db/db.json') //метод получения данных
         .then((response) => { //получаем доступ к базе данных на сервере или локально
             //с помощью then обработали промис и проверили статусы
             if (response.ok) { // если все ок, то выводим данные
